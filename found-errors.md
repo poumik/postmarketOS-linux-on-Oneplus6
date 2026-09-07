@@ -377,5 +377,52 @@ IMG_DIR="$WORK_DIR/installed/images/$DEVICE"
 
 ### For AGENTS.md:
 - Add `README.md` and `bestapps.md` to file structure
+
+---
+
+# RESOLUTION — 2026-09-07 Audit & Full Correction
+
+A follow-up audit (verified against the official pmbootstrap docs, pmbootstrap source code, the Alpine package index, the Flatpak/NetworkManager docs, and the OnePlus 6 wiki page snapshot in this repo) found **~30 additional errors** — and several errors in this report itself. All files were then fully corrected.
+
+## Corrections to this report (found-errors.md was wrong about)
+
+1. **#1, #2, #4, #10, #16 (image filename claim) — BACKWARDS.** Verified from pmbootstrap source (`pmb/install/_install.py`, `pmb/commands/export.py`): the rootfs image IS named `oneplus-enchilada.img`. There is NO `userdata.img` and NO `~/.local/var/pmbootstrap/installed/images/` directory. Correct flow: `pmbootstrap export` symlinks `oneplus-enchilada.img`, `boot.img` (and initramfs/vmlinuz/dtbo.img) into `/tmp/postmarketOS-export/`. The actual bug in `install-pmosp.sh` was only the missing path, not the filename.
+2. **#7 (Windows/WSL fix) — WRONG.** pmbootstrap docs: WSL "does **not** work!", macOS unsupported. Debian now ships `pmbootstrap` (`apt install pmbootstrap` works). The real fix: mark non-Linux hosts unsupported, recommend Linux VM; the guide's `brew`/WSL sections were removed, not converted to pip.
+3. **#3 (init flags) — the suggested fix doesn't exist.** `pmbootstrap init` has no `--device/--shell/--ui` flags (only `--shallow-initial-clone`). Fix applied: interactive init with instructions.
+4. **#15, #23 (linaro fixes) — the suggested replacements don't exist.** There is no `pmbootstrap flasher chroot` or `flasher fastboot`. Real replacement: run commands on the phone (`apk list -I`, `ls /dev/disk/by-partlabel/`) or via SSH.
+5. **#19 (SSH IP) — the "fix" would have blessed a wrong IP.** The real default pmOS USB networking address is `172.16.42.1` (port 22). `10.15.19.234:2222` was wrong (2222 is pmbootstrap's QEMU SSH port).
+6. **#13, #14 — invalid.** `scripts/daily-use.sh` was EMPTY (1 byte); the referenced line numbers didn't exist. The script has now been written from scratch (runs on host, operates over SSH).
+7. **#26 — both sides wrong.** `pmbootstrap os update` doesn't exist at all; phone updates are `sudo apk update && sudo apk upgrade`.
+8. **#21/#22 were too soft.** Anbox is dead (not in repos — replaced with Waydroid notes); fingerprint is **Broken** upstream (not "experimental"), so fprintd was removed from bestapps.md.
+
+## Additional errors found in project files (now fixed)
+
+- **Invented pmbootstrap commands** across all docs: `pmbootstrap os update`, `pmbootstrap flasher sshd enable`, `pmbootstrap flasher connman restart`, `pmbootstrap flasher phosh restart`, `pmbootstrap flasher linaro ...`, `pmbootstrap info`, `pmbootstrap unbrick`, `pmbootstrap os update`-based "Method 1" updates. Real flasher subcommands: boot, flash_kernel, flash_lk2nd, flash_rootfs, flash_vbmeta, flash_dtbo, sideload, list_devices, list_flavors. sshd is enabled by default (`install --no-sshd` to disable).
+- **`fastboot flashing unlock`** → wiki documents **`fastboot oem unlock`** for the OnePlus 6.
+- **`apk install` / `apk remove`** → `apk add` / `apk del` (~20 occurrences).
+- **`flatpak remote-add --if-missing`** → `--if-not-exists`.
+- **SSH over USB `ssh -p 2222 user@10.15.19.234`** → `ssh user@172.16.42.1` (port 22; 2222 is QEMU's port).
+- **External display over USB-C claimed "supported"** → OnePlus 6 has NO DisplayPort alt mode; USB OTG is Broken (wiki, maintainer quote). Sections removed/rewritten in using-postmarketOS.md, README.md, quick-ref.md.
+- **Fabricated Alpine packages in bestapps.md** (verified against pkgs.alpinelinux.org, aarch64): `twitter`, `mastodon`, `signal-desktop`, `slack`, `discord`, `corebird`, `bitmessage`, `retroshare`, `glance`, `pict-see`, `catview`, `fingerterm`, `neofetch`, `anbox` — none exist. Telegram is also not packaged (Flatpak-only). `taskwarrior` is named `task` in Alpine; `obexftp` doesn't exist (removed).
+- **`Ctrl+Alt+F7` TTY return + Volume Down/Power×3** — the combo is the `ttyescape` package feature, not built-in; F-key return needs a physical keyboard. Docs rewritten.
+- **Camera section gibberish** ("shotwell or pictures taken with maim") — rewritten around Megapixels; `/var/lib/lp/images/` is a Librem path, removed; `/home/user/Pictures/` → `~/Pictures/`.
+- **`nmcli connection up all`** — invalid; replaced with `nmcli networking on`.
+- **"Phosh uses gpk-application"** — outdated; Phosh uses gnome-software.
+- **`pmbootstrap init` here-doc automation** in install-pmosp.sh — init is fully interactive; replaced with instructions + confirmation prompts.
+- **setup-check.sh** — bogus "pmbootstrap_size" probe replaced with a real `df`-based free-space check; install hints corrected; Linux-only check added.
+- **Hardcoded image dir** in flash-operations.sh — now `/tmp/postmarketOS-export` with work-chroot fallback (`$(pmbootstrap config work)/chroot_native/home/pmos/rootfs/`).
+- **Missing dtbo consequence warning** (erasing dtbo makes Android/TWRP unbootable on the current slot) — added everywhere relevant.
+- **Missing wiki facts** — added: Wi-Fi US regulatory channels 12/13 issue, 2.4 GHz dropouts, GPS needs SIM+Geoclue, VoLTE via `81voltd` (experimental), single-SIM recommendation, CrashDump mode handling, camera-focus-motor idle-drain workaround, OxygenOS 9.0.8 recommendation for GPS/VoLTE.
+- **`brew install pmbootstrap`** — removed (macOS unsupported).
+- **README/AGENTS file trees** — now list bestapps.md, found-errors.md, wiki PDF, opencode.json.
+
+## Verification performed
+
+- pmbootstrap subcommand list & flags: official docs (docs.postmarketos.org) + source (gitlab.postmarketos.org)
+- Image naming/export dir: pmbootstrap source (`pmb/install/_install.py`, `pmb/commands/export.py`)
+- Package existence: pkgs.alpinelinux.org (v3.22, aarch64)
+- OnePlus 6 hardware/flash facts: wiki page snapshot PDF (repo) — matches live wiki
+- flatpak flag: flatpak-command-reference; nmcli: NetworkManager docs
+- Scripts: `bash -n` syntax check + banned-pattern grep (see AGENTS.md "Verified Command Facts")
 - Update line counts
 - Add note about script executable permissions
