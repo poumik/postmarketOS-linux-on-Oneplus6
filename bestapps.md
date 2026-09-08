@@ -1,3 +1,13 @@
+> **Note on desktop apps:** LibreOffice, Evolution, GnuCash, Hexchat and
+> similar full desktop GTK applications were not designed for touchscreens
+> or portrait phone displays. They install and run, but expect small
+> touch targets, dense toolbars, and menus that don't fit the screen well.
+> Thunderbird specifically has had touch-input issues on Phosh — Geary is
+> the small-screen-optimized alternative for email. If a desktop app is
+> hard to use, check Phosh's display-scaling setting, or consider pairing
+> a Bluetooth mouse/keyboard for these apps specifically.
+
+
 # Best Apps to Install on OnePlus 6 running postmarketOS
 
 This guide lists the best usable applications to install on the OnePlus 6 when running postmarketOS, organized by category. postmarketOS is based on Alpine Linux, so packages use the `apk` package manager.
