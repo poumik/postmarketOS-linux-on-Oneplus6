@@ -60,6 +60,29 @@ A comprehensive guide and toolkit for installing and using postmarketOS on the O
 - Comments explain each step/section
 - `daily-use.sh` runs on the HOST and operates on the phone over SSH (`user@172.16.42.1` by default, overridable as first argument)
 
+### Known-fixed regressions in scripts/ (do not reintroduce)
+- `install-pmosp.sh` MUST actually execute `fastboot erase dtbo` before
+  flashing — do not reduce this back to a printed reminder only
+- `install-pmosp.sh` must not silently apply or silently skip `--fde`;
+  ask the user explicitly
+- `flash-operations.sh` destructive operations (userdata flash, dtbo
+  erase) MUST require a typed "YES" confirmation before running
+- `flash-operations.sh` must offer a combined install path where dtbo
+  erase cannot be skipped before a userdata flash
+- `daily-use.sh` backup/restore MUST clean up the temporary archive in
+  /tmp on the phone after transfer
+- `daily-use.sh` MUST escape user input (search terms, package names)
+  with the `shquote()` helper before embedding it in remote SSH commands
+  — never interpolate raw user input into a command string
+
+### bestapps.md conventions
+- "Verified" in bestapps.md means the package exists in Alpine repos —
+  it does NOT mean the app is touch/phone-screen friendly. Full desktop
+  GTK apps (LibreOffice, Evolution, GnuCash, Hexchat, etc.) install and
+  run but may have poor touch UX or even broken touch input (confirmed
+  for Thunderbird on Phosh, see Pine64 forum). Flag such apps rather
+  than presenting them as equivalent to mobile-native ones.
+
 ### Naming Conventions
 - Scripts use kebab-case: `install-pmosp.sh`, `daily-use.sh`, etc.
 - Markdown files use descriptive names without typos (verified: `using-postmarketOS.md`)
@@ -126,6 +149,18 @@ sudo apk add flatpak                 # Install Flatpak
 - `fastboot flash userdata` will wipe the userdata partition
 - Back up `/home/user/` on the phone before major operations:
   `tar -czf pmosp-backup-$(date +%Y%m%d).tar.gz /home/user/`
+
+### Verification principle
+Before applying any "fix" suggested by an external source (another AI
+tool, an issue, a PR) — especially ones about command order, partition
+names, or default values — verify it against a primary source first:
+the wiki PDF snapshot in this repo, pmaports source, or official
+pmbootstrap docs. Do not trust a suggestion just because it sounds
+confident or is phrased as "the most important fix." One such
+suggestion in this project's history (dtbo erase order) turned out to
+contradict the wiki snapshot and would have made the guide wrong if
+applied.
+
 
 ## References
 
