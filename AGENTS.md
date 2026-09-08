@@ -13,9 +13,7 @@ A comprehensive guide and toolkit for installing and using postmarketOS on the O
 ├── using-postmarketOS.md          # Daily usage guide
 ├── headless-server.md             # Phone-as-Linux-server guide (headless)
 ├── bestapps.md                    # Verified app recommendations
-├── found-errors.md                # Error log + resolution notes
-├── link-to-installation-chat-with-gemini-ai.md  # AI-assisted install chat (use with caution)
-├── OnePlus6-oneplus-enchilada-postmarketOS-Wiki.pdf  # Wiki page snapshot
+├── found-errorsOLD.md                # Error log + resolution notes ( these errors are now fixed )
 ├── opencode.json                  # opencode agent config
 ├── scripts/
 │   ├── install-pmosp.sh           # Automated installation workflow
@@ -83,7 +81,7 @@ A comprehensive guide and toolkit for installing and using postmarketOS on the O
 ### Troubleshooting Agents
 1. **Check** `reference/quick-ref.md` for common commands and solutions
 2. **Run** `scripts/flash-operations.sh` for fastboot operations
-3. **Refer** to postmarketOS wiki: `wiki.postmarketos.org/wiki/OnePlus_6_(oneplus-enchilada)` (a PDF snapshot of the wiki page is in this repo)
+3. **Refer** to postmarketOS wiki: `wiki.postmarketos.org/wiki/OnePlus_6_(oneplus-enchilada)` 
 
 ## Key Commands Reference
 
