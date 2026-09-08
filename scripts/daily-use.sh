@@ -3,6 +3,14 @@
 # Interactive menu for common daily tasks.
 # This script runs on the HOST computer and talks to the phone over SSH/USB.
 # The phone must be connected via USB (sshd is enabled by default in pmOS).
+#
+# FIXES vs previous version:
+#   - Backup/restore no longer leaves the tar archive behind in /tmp on the
+#     phone; it is removed after the transfer completes.
+#   - User-supplied search/package-name input is now safely single-quote
+#     escaped before being embedded in the remote SSH command string,
+#     instead of being wrapped in raw single quotes (which broke if the
+#     input itself contained a quote character).
 
 set -e
 
@@ -34,6 +42,12 @@ phone() {
     ssh "$PHONE_TARGET" "$@"
 }
 
+# POSIX-safe single-quote escaping for embedding user input into the
+# remote shell command (works whether the phone's shell is bash or ash).
+shquote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
 PS3="Choose an operation: "
 options=(
     "Update phone system (apk update + upgrade)"
@@ -58,15 +72,15 @@ while true; do
                 break ;;
             2)
                 read -r -p "Search term: " term
-                phone "apk search '$term'"
+                phone "apk search $(shquote "$term")"
                 break ;;
             3)
                 read -r -p "Package name: " pkg
-                phone "sudo apk add '$pkg'"
+                phone "sudo apk add $(shquote "$pkg")"
                 break ;;
             4)
                 read -r -p "Package name: " pkg
-                phone "sudo apk del '$pkg'"
+                phone "sudo apk del $(shquote "$pkg")"
                 break ;;
             5)
                 phone "apk list -I | head -50"
@@ -74,9 +88,12 @@ while true; do
             6)
                 read -r -p "Backup file name [pmosp-backup-$(date +%Y%m%d).tar.gz]: " bfile
                 bfile=${bfile:-pmosp-backup-$(date +%Y%m%d).tar.gz}
-                # Run tar ON the phone, then pull the archive to the host
+                qbfile=$(shquote "$bfile")
+                # Run tar ON the phone, pull the archive to the host, then
+                # remove the temporary copy left on the phone.
                 phone "tar -czf /tmp/$bfile /home/$PHONE_USER/ 2>/dev/null" || true
                 scp "$PHONE_TARGET:/tmp/$bfile" .
+                phone "rm -f /tmp/$qbfile"
                 echo "Backup saved to ./$(basename "$bfile")"
                 break ;;
             7)
@@ -84,6 +101,7 @@ while true; do
                 if [ -f "$bfile" ]; then
                     scp "$bfile" "$PHONE_TARGET:/tmp/restore.tar.gz"
                     phone "tar -xzf /tmp/restore.tar.gz -C /"
+                    phone "rm -f /tmp/restore.tar.gz"
                     echo "Restore complete."
                 else
                     echo "ERROR: File not found: $bfile"

@@ -3,6 +3,12 @@
 # Prerequisite: pmbootstrap must be installed on your Linux machine
 # (pmbootstrap does NOT support macOS or Windows/WSL)
 # Usage: ./install-pmosp.sh
+#
+# FIXES vs previous version:
+#   - Script now actually RUNS `fastboot erase dtbo` (it used to only print
+#     a reminder telling the user to do it themselves).
+#   - --fde was documented as "recommended" but never applied. The script
+#     now asks explicitly instead of silently deciding for the user.
 
 set -e
 
@@ -40,9 +46,18 @@ echo ""
 echo "Step 2: Build the postmarketOS image"
 echo "----------------------------------------"
 echo "This will take 20-40 minutes..."
-echo "Add --fde for full disk encryption (recommended)."
+echo ""
+FDE_FLAG=""
+read -r -p "Enable full disk encryption (--fde)? [y/N]: " fde_choice
+if [ "$fde_choice" = "y" ] || [ "$fde_choice" = "Y" ]; then
+    FDE_FLAG="--fde"
+    echo "Full disk encryption will be enabled."
+else
+    echo "Full disk encryption will NOT be enabled."
+fi
 read -r -p "Press Enter to start 'pmbootstrap install'..."
-pmbootstrap install
+# shellcheck disable=SC2086
+pmbootstrap install $FDE_FLAG
 
 echo ""
 echo "Step 3: Export the flashable images"
@@ -72,8 +87,6 @@ echo "----------------------------------------"
 echo "Please ensure:"
 echo "1. OxygenOS is upgraded to latest version on both slots (recommended)"
 echo "2. Bootloader is unlocked: fastboot oem unlock"
-echo "3. dtbo partition is erased: fastboot erase dtbo"
-echo "   WARNING: erasing dtbo makes Android/TWRP unbootable on this slot!"
 echo ""
 echo "Put the phone in fastboot mode: adb reboot bootloader"
 echo "(or unplug USB and hold Power + Volume Up)"
@@ -81,6 +94,13 @@ fastboot devices || {
     echo "ERROR: No fastboot device detected. Connect the phone in fastboot mode."
     exit 1
 }
+
+echo ""
+echo "Erasing dtbo partition..."
+echo "WARNING: This makes Android and TWRP unbootable on this slot until you"
+echo "re-flash an Android ROM via fastboot."
+fastboot erase dtbo
+echo "dtbo partition erased."
 
 echo ""
 echo "Step 5: Flash postmarketOS to phone"
@@ -95,7 +115,7 @@ echo "----------------------------------------"
 fastboot reboot
 echo "DO NOT use the power button to reboot - use: fastboot reboot"
 echo ""
-echo "Default credentials (may vary by build):"
+echo "Default credentials (standard build; may vary by build configuration):"
 echo "  Username: user"
 echo "  Password: 147147"
 echo ""
