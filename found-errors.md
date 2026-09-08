@@ -1,3 +1,6 @@
+>These errors are now fixed!!!
+
+
 # Found Errors & Inconsistencies in postmarketOS OnePlus 6 Project
 
 ## Critical Errors
