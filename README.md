@@ -1,3 +1,10 @@
+> ⚠️ **Disclaimer:** This is an unofficial, community-maintained guide.
+> Flashing your device carries risk of data loss or a bricked phone.
+> Follow these steps at your own risk. Always back up important data first.
+> This project is not affiliated with OnePlus or the postmarketOS project.
+
+
+
 # postmarketOS OnePlus 6 Installation & Operations
 
 A comprehensive guide and toolkit for installing and using postmarketOS on the OnePlus 6 (codename: `oneplus-enchilada`).
@@ -200,3 +207,12 @@ Refer to postmarketOS wiki: `wiki.postmarketos.org/wiki/OnePlus_6_(oneplus-enchi
 - pmbootstrap Documentation: https://docs.postmarketos.org/pmbootstrap/main/installation.html
 - Installation Guide: https://wiki.postmarketos.org/wiki/Installation
 - Default credentials (standard build, may vary): Username `user`, Password `147147`
+
+
+## Disclaimer
+
+This repository is provided "as is", without warranty of any kind.
+The author(s) are not responsible for any damage, data loss, or bricked
+devices resulting from following these instructions. Flashing custom
+firmware voids your device warranty and always carries risk — proceed
+only if you understand and accept that risk.
