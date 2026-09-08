@@ -21,8 +21,6 @@ postmarketOS is a mobile operating system based on mainline Linux, extending the
 ├── headless-server.md             # Phone-as-Linux-server guide (headless)
 ├── bestapps.md                    # Verified app recommendations
 ├── found-errors.md                # Error log + resolution notes
-├── link-to-installation-chat-with-gemini-ai.md  # AI-assisted install chat (use with caution)
-├── OnePlus6-oneplus-enchilada-postmarketOS-Wiki.pdf  # Wiki page snapshot
 ├── scripts/
 │   ├── install-pmosp.sh           # Automated installation workflow
 │   ├── daily-use.sh               # Interactive daily operations menu (over SSH)
